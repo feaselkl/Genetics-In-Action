@@ -1,0 +1,60 @@
+---
+title: "01 - GA - Mathematical Formula"
+author: "Kevin Feasel"
+date: "2024-08-22"
+output: html_notebook
+---
+
+# Maximizing a Mathematical Function
+
+The purpose of this program is to find the maximum point in a function.
+
+We will use the `GA` library to build and implement a simple genetic algorithm to solve this problem.
+
+```{r install}
+if (!require(GA)) {
+  install.packages("GA")
+  library(GA)
+}
+```
+
+## Defining the Problem
+
+There are two maxima, one local maximum at approximately -6.5 and a global maximum at approximately 6.5. Our range will fit from -10 to 10.
+
+```{r function}
+f <- function(x) { (x^2+x)*cos(x) }
+min <- -10; max <- 10
+curve(f, min, max, n = 1000)
+```
+
+## Solving the Problem
+
+Building a genetic algorithm to solve this is simple:
+
+```{r ga}
+GA <- ga(type = "real-valued", fitness = f, lower = min, upper = max, monitor = FALSE)
+```
+
+## Reviewing Results
+
+Let's see how well the genetic algorithm did:
+
+```{r results}
+summary(GA)
+```
+
+Running a summary shows us the main solution at 6.56, with y valued at 47.70. By default, we used a crossover possibility of 80% and a mutation probability of 10%. The mutation rate seems a bit high for a default, but it did lead us to an answer. Now let's check the convergence rate:
+
+```{r convergence}
+plot(GA)
+```
+
+It looks like the best performers in the first 10 or so generations were caught in the local maximum around -6.5. Then, some members of the population found the global maximum and we stayed at that maximum for the rest of the trial. By generation 30, the median value was near the global optimum and we see major convergence in the later generations. Despite this, the mean value fluctuates significantly, indicating that a decent segment of the population provided us with miserable scores. The **best** members of a genetic algorithm population tend to be good, but that doesn't mean that **all** members will be equally good.
+
+Finally, let's plot the best result. ga is an R4 class so we use the `@` operator to access properties on the class. The properties we are interested in are `solution` and `fitnessValue`. Because our single variable is a real value, we can plot the solution value and fitness score as the x and y variables, respectively.
+
+```{r curve}
+curve(f, min, max, n = 1000)
+points(GA@solution, GA@fitnessValue, col = 2, pch = 19)
+```

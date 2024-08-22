@@ -1,0 +1,264 @@
+---
+title: "06 - EVT - DBA Salaries"
+author: "Kevin Feasel"
+date: "2024-08-22"
+output: html_notebook
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Analyzing DBA Salaries
+
+In this demo, we will look at a survey of data professional salaries
+that Brent Ozar put together in 2024. Our goal is to see if we can find
+important features which explain salaries and help predict how much we
+might make according to this data sample.
+
+This data is available on the [Brent Ozar
+Unlimited](https://www.brentozar.com/archive/2024/01/announcing-the-2024-data-professional-salary-survey-results/)
+website.
+
+## Install Packages
+
+Because this is an Excel file, we will use the `readxl` package (part of
+the tidyverse) to read the data set. We will build a regression tree
+using the `evtree` package. `evtree` makes it easy to evolve decision
+trees and regression trees. It is also an older package, so we will
+install it locally rather than through CRAN.
+
+```{r setup}
+if(!require(partykit)) {
+    install.packages("partykit", repos = "http://cran.us.r-project.org")
+    library(partykit)
+}
+
+if(!require(evtree)) {
+    install.packages("evtree_1.0-8.tar.gz", repos = NULL, type="source")
+    library(evtree)
+}
+
+if(!require(tidyverse)) {
+  install.packages("tidyverse", repos = "http://cran.us.r-project.org")
+  library(tidyverse)
+}
+
+if(!require(readxl)) {
+  install.packages("readxl", repos = "http://cran.us.r-project.org")
+  library(readxl)
+}
+```
+
+## Review the Data
+
+```{r read-data}
+salary_data <- read_excel("../Data/2024_Data_Professional_Salary_Survey_Responses.xlsx", sheet = "Salary Survey", range = "C4:AD12983", guess_max = 13000)
+```
+
+Let's take a quick look at the data to make sure everything loaded
+correctly and also to give us an idea of what we're dealing with here.
+
+```{r quick-look}
+str(salary_data)
+```
+
+```{r head}
+head(salary_data)
+```
+
+## Data Engineering
+
+For our regression, we are going to perform some data munging, creating
+a data frame which fits our guidelines. These guidelines are: - We will
+only look at participants in the United States. There are some huge
+differences in average salary across countries that I don't want to deal
+with today. - We will look only at participants who selected Microsoft
+SQL Server as their primary database. This is a vast majority of the
+respondents, so that won't filter out much. - We will look only at
+full-time employees, skipping freelancers and part-timers. - We will
+only look at people with a salary at or below \$500,000 per year. Values
+above that are possible, but they're likely to be typos or bad data.
+
+From there, we want to pull out a few variables and include them as-is:
+
+-   SalaryUSD (our independent variable)
+-   YearsWithThisDatabase
+-   YearsWithThisTypeOfJob
+
+We would also like to convert some variables to factors and include them
+as well:
+
+-   Education
+-   JobTitle
+-   EmploymentSector
+-   ManageStaff
+
+```{r salary-pred}
+salary_pred <- salary_data %>%
+  filter(Country == "United States") %>%
+  filter(PrimaryDatabase == "Microsoft SQL Server") %>%
+  filter(EmploymentStatus %in% c("Full time employee", "Full time employee of a consulting/contracting company")) %>%
+  filter(SalaryUSD <= 500000) %>%
+  filter(YearsWithThisDatabase <= 40) %>%
+  filter(YearsWithThisTypeOfJob <= 40) %>%
+  select(SalaryUSD, YearsWithThisDatabase, YearsWithThisTypeOfJob, Education, JobTitle, EmploymentSector, ManageStaff)
+
+salary_pred$Education <- as.factor(salary_pred$Education)
+salary_pred$JobTitle <- as.factor(salary_pred$JobTitle)
+salary_pred$EmploymentSector <- as.factor(salary_pred$EmploymentSector)
+salary_pred$ManageStaff <- as.factor(salary_pred$ManageStaff)
+salary_pred$YearsWithThisDatabase <- as.integer(salary_pred$YearsWithThisDatabase)
+salary_pred$YearsWithThisTypeOfJob <- as.integer(salary_pred$YearsWithThisTypeOfJob)
+```
+
+We have our data in place, so let's take a quick look at it to make sure
+everything looks fine.
+
+```{r pred-quick-look}
+str(salary_pred)
+```
+
+```{r pred-head}
+head(salary_pred, 6)
+```
+
+## Building the Regression Tree
+
+Our next goal is to build a regression tree. Regression trees are sort
+of like decision trees, except instead of making yes-no decisions, we
+get expected outputs. Our goal is to predict SalaryUSD given everything
+else in `salary_pred`. We will set the maximum depth to 6, meaning that
+no branch may go further than six nodes deep.
+
+Note that this will take a while to run, given the data size and task
+complexity.
+
+```{r regression-tree}
+ev <- evtree(SalaryUSD ~ YearsWithThisDatabase + YearsWithThisTypeOfJob + Education + JobTitle + EmploymentSector + ManageStaff,
+             data = salary_pred, minbucket = 10, minsplit = 20, maxdepth = 6)
+```
+
+After spending some time building up the tree, we can use the `plot`
+function to plot the results.
+
+```{r plot-tree}
+plot(ev)
+```
+
+That's a somewhat noisy image, so let's look at the object details to
+see some more of this.
+
+```{r tree-details}
+ev
+```
+
+This gives us some insight into our variables. First of all, hours
+worked per week was not a significant factor in this analysis. Years
+with this database, though, is a critical factor--it shows up in a
+couple places. Also interesting is that federal government and private
+business have nicer returns than state or local government.
+
+## Generating Regression Tree Predictions
+
+We can use the `predict` function to see the specific predictions for
+each participant, and add those predictions as a new column called
+`EVPrediction`.
+
+```{r predict-salaries}
+salary_pred$EVPrediction <- predict(ev)
+```
+
+## Building a Linear Regression
+
+I'd like to compare this against a linear regression to see how well our
+regression tree stands up against the normal process.
+
+```{r linear-regression}
+salary_lm <- lm(SalaryUSD ~ YearsWithThisDatabase + 
+                YearsWithThisTypeOfJob + Education + JobTitle +
+                EmploymentSector + ManageStaff,
+                data = salary_pred)
+```
+
+Here is a summary of the results.
+
+```{r lm-summary}
+summary(salary_lm)
+```
+
+These results are a bit different than the regression tree, so it'll be
+interesting to see how the aggregates shake out. Let's predict each
+salary using this model and move forward.
+
+```{r lm-predict}
+salary_pred$LMPrediction <- predict(salary_lm)
+```
+
+## Comparing Models
+
+I'd like to use Root Mean Square Deviance to calculate the distance of
+both of these regressions from the correct answers. The output of this
+RMSE calculation is dollars, so it gives us an idea of just how much
+variance we haven't explained. Let's start with the regression tree and
+follow up with our linear regression. Lower numbers are better.
+
+```{r rmse-ev}
+sqrt(mean((salary_pred$SalaryUSD - salary_pred$EVPrediction)^2))
+```
+
+```{r rmse-lm}
+sqrt(mean((salary_pred$SalaryUSD - salary_pred$LMPrediction)^2))
+```
+
+Both of these ended up in a pretty similar place, with the linear model
+being just a hair more accurate.
+
+## Individual Predictions
+
+Now that we have a pair of models in place, let's generate predictions
+for three people. The first person is someone brand new to the industry,
+the second person is me five years into my career, the third was me as a
+database engineer. Then we have me as a manager of an analytics team
+(start and end of tenure), and finally me as a data scientist today. We
+can see how the two solutions fare when looking at these individuals.
+
+```{r test_cases}
+
+salary_lm <- lm(SalaryUSD ~ YearsWithThisDatabase + 
+                YearsWithThisTypeOfJob + Education + JobTitle +
+                EmploymentSector + ManageStaff,
+                data = salary_pred)
+
+test_cases <- data.frame(
+    YearsWithThisDatabase = c(0, 5, 8, 11, 16, 18),
+    YearsWithThisTypeOfJob = c(0, 5, 8, 1, 5, 1),
+    Education = c("Bachelors (4 years)", "Masters", "Masters", "Masters", "Masters", "Masters"),
+    JobTitle = c("DBA", "DBA", "DBA - Dev", "Manager", "Manager", "Data Scientist"),
+    EmploymentSector = c("Private business", "State/province government", "Private business", "Private business", "Private business", "Private business"),
+    ManageStaff = c("No", "No", "No", "Yes", "Yes", "No")
+)
+
+test_cases
+```
+
+Now let's generate predictions for these three people using both the
+regression tree.
+
+```{r test-predictions-ev}
+predict(ev, test_cases)
+```
+
+And the linear regression.
+
+```{r test-predictions-lm}
+predict(salary_lm, test_cases)
+```
+
+Summarizing the findings:
+
+-   The linear model expects a higher salary for a brand new DBA.
+-   The linear model expects a lower salary for a DBA with 5 years of
+    experience as a state government employee.
+-   Data scientist and manager both seem to hit the cap of \$135k in the
+    evtree model.
+-   The linear model tends to run lower than the evtree model.

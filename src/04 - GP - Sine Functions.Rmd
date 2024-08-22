@@ -1,0 +1,162 @@
+---
+title: "04 - GP - Sine Functions"
+author: "Kevin Feasel"
+date: "2024-08-22"
+output: html_notebook
+---
+
+# Deriving A Sine Function
+
+In this demo, we will use genetic programming to derive a sine function using basic mathematical tools.  In the first part of this demo, we will have a limited set of tools and will see what a genetic program can generate.  Then, in the second half, we will provide sufficient tools to solve the problem.
+
+The library we are using is called `rgp` and is one of the genetic programming libraries for R. Unfortunately, it is in a defunct status and was archived in 2018. Sadly, there don't appear to be any good successor libraries for genetic programming, so we'll still use it.
+
+```{r install}
+if(!require(emoa)) {
+    install.packages("emoa")
+    library(emoa)
+}
+if(!require(rgp)) {
+    install.packages("rgp_0.4-1.tar.gz", repos = NULL, type="source")
+    library(rgp)
+}
+```
+
+## Part One:  Inadequate Tools
+
+For this first part, we are going to try to derive a sine wave using three mathematical function:  multiplication, addition, and subtraction.  These three tools are not enough, on their own, to explain how a sine wave functions, but the genetic program will try its best regardless.
+
+```{r function_set}
+function_set <- functionSet("+", "*", "-")
+```
+
+We will define everything in terms of one variable, which we will call `x`.  You can name this variable anything you want, though.
+
+```{r variable_set}
+input_variable_set <- inputVariableSet("x")
+```
+
+We will use a factory method to generate constants.  This will pull a pseudo-random number from a normal distribution.
+
+```{r constant_set}
+constant_factory_set <- constantFactorySet(function() { rnorm(1) })
+```
+
+We will define the interval for our calculation, spanning from -pi to pi.  If we have several sine wave iterations, then the basic tools we have access to will behave even worse.
+
+```{r interval}
+function_interval <- seq(from = -pi, to = pi, by = 0.1)
+```
+
+Our fitness function describes how close the generated organism's results are to a sine wave.  We will use Root Mean Square Error to determine distance.
+
+```{r fitness}
+fitness_function <- function(f) { rmse(f(function_interval), sin(function_interval)) }
+```
+
+Finally, we call the geneticProgramming function.  This function takes the various objects we've created and builds programs.  In this case, the program is a basic mathematical function.  We will run for 20 seconds.  Note that there are several stop conditions, including time-based, step-based, and fitness function result conditions.
+
+```{r gp}
+result <- geneticProgramming(
+  functionSet = function_set,
+  inputVariables = input_variable_set,
+  constantSet = constant_factory_set,
+  fitnessFunction = fitness_function,
+  stopCondition = makeTimeStopCondition(20) #run for 20 seconds
+)
+```
+
+We now want to look at the best solution in the set.  This is the member of the population with the **lowest** fitness value.  Remember that our calculation is the RMSE, so a value of 0 would mean perfect alignment.
+
+```{r best_solution}
+best_solution <- result$population[[which.min(result$fitnessValues)]]
+best_solution
+min(result$fitnessValues)
+```
+
+We can check out how our function did by plotting our predicted functional results and then overlaying the sine wave.  Note that best_solution actually is a function and not just a result.
+
+```{r plot}
+plot(y = best_solution(function_interval), x = function_interval, type = "l", lty = 1, xlab = "x", ylab = "y")
+lines(y = sin(function_interval), x = function_interval, lty = 2)
+```
+
+All in all, that's not a terrible result, but it isn't perfect. With better tools, we can get a much better result.
+
+## Part 2:  Adding Cosine
+
+If we change the function set to include cosine, we will find much better results.  We don't need to change any other parts of the setup, though; they're still fine.
+
+```{r function_set_cosine}
+function_set <- functionSet("+", "*", "-", "cos")
+```
+
+Now we can run the genetic program again.
+
+```{r gp_cosine}
+result <- geneticProgramming(
+  functionSet = function_set,
+  inputVariables = input_variable_set,
+  constantSet = constant_factory_set,
+  fitnessFunction = fitness_function,
+  stopCondition = makeTimeStopCondition(7) #run for 7 seconds
+)
+```
+
+We can check out the best solution again.
+
+```{r best_solution_cosine}
+best_solution <- result$population[[which.min(result$fitnessValues)]]
+best_solution
+min(result$fitnessValues)
+```
+
+Note that there is a very minor difference, as the genetic program doesn't have the construct of pi and so cannot calculate pi/2.  If we did the calculation in radians, we likely could get a fitness value of 0.  Still, that's a lot closer!
+
+```{r plot_cosine}
+plot(y = best_solution(function_interval), x = function_interval, type = "l", lty = 1, xlab = "x", ylab = "y")
+lines(y = sin(function_interval), x = function_interval, lty = 2)
+```
+
+The lines are now so close that we can't even see a difference.
+
+## Part 3:  Trigonometric Functions
+
+We have some built-in function sets available to us, so we won't need to specify each mathematical function independently.  One example is trigonometric functions.
+
+```{r function_set_trig}
+function_set <- trigonometricFunctionSet
+```
+
+We can run the genetic program again.
+
+```{r gp_trig}
+result <- geneticProgramming(
+  functionSet = function_set,
+  inputVariables = input_variable_set,
+  constantSet = constant_factory_set,
+  fitnessFunction = fitness_function,
+  stopCondition = makeTimeStopCondition(2) #run for 2 seconds
+)
+```
+
+We can check out the best solution again.
+
+```{r best_solution_trig}
+best_solution <- result$population[[which.min(result$fitnessValues)]]
+best_solution
+min(result$fitnessValues)
+```
+
+We didn't need to run for the full 20 seconds; even 1 second would have been long enough!  The genetic program instantly picked up on this being a sine wave.
+
+From the rgp help file:
+
+- `arithmeticFunctionSet` is an untyped function set containing the functions "+", "-", "*", and "/".
+- `expLogFunctionSet` is an untyped function set containing the functions "sqrt", "exp", and "ln".
+- `trigonometricFunctionSet` is an untyped function set containing the functions "sin", "cos", and "tan".
+- `mathFunctionSet` is an untyped function set containing all of the above functions.
+
+## Important Warning
+
+Even with this successful notebook, I do **not** recommend using the `rgp` library at this point. Much of the functionality will cause modern versions of R to crash. In the next notebook, we'll look at a (slightly) more modern library in `gramEvol`.

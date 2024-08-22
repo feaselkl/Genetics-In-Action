@@ -1,0 +1,623 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Catallaxy Services | Genetics In Action:  Evolutionary Algorithms</title>
+
+		<link rel="stylesheet" href="../reveal.js/dist/reset.css">
+		<link rel="stylesheet" href="../reveal.js/dist/reveal.css">
+		<link rel="stylesheet" href="../reveal.js/dist/theme/black.css" id="theme">
+		<link rel="stylesheet" href="../WebsiteAssets/mods.css">
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="../reveal.js/plugin/highlight/monokai.css" id="highlight-theme">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h2>Genetics In Action:  Evolutionary Algorithms</h2>
+					
+					<a href="https://www.catallaxyservices.com">Kevin Feasel</a> (<a href="https://twitter.com/feaselkl">@feaselkl</a>)<br />
+					<a href="https://csmore.info/on/gia">https://csmore.info/on/gia</a>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Who Am I?  What Am I Doing Here?</h3>
+					<div class="container">
+						<div class="col">
+							<table class="whoami">
+								<tr>
+									<td><a href="https://csmore.info"><img src="../WebsiteAssets/Logo.png" height="100" /></a></td>
+									<td nowrap><a href="https://csmore.info">Catallaxy Services</a></td>
+								</tr>
+								<tr>
+									<td><a href="https://curatedsql.com"><img src="../WebsiteAssets/CuratedSQLLogo.png" height="100" /></a></td>
+									<td nowrap><a href="https://curatedsql.com">Curated SQL</a></td>
+								</tr>
+								<tr>
+									<td><a href="https://www.amazon.com/Finding-Ghosts-Your-Data-Techniques/dp/1484288696"><img src="../WebsiteAssets/Finding-Ghosts.jpg" height="120" /></a></td>
+									<td nowrap><a href="https://www.amazon.com/Finding-Ghosts-Your-Data-Techniques/dp/1484288696">Finding Ghosts in Your Data</a></td>
+								</tr>
+							</table>
+						</div>
+						<div class="col">
+							<a href="http://www.twitter.com/feaselkl"><img src="../WebsiteAssets/HeadShot.jpg" height="358" width="315" /></a>
+							<br />
+							<a href="http://www.twitter.com/feaselkl">@feaselkl</a>
+						</div>					
+					</div>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/motivation.jpg" data-background-opacity="0.2">
+					<h3>Motivation</h3>
+					
+					<p>My goals in this talk:</p>
+					
+					<ul>
+						<li>Introduce you to evolutionary algorithms</li>
+						<li>Explain the intuition behind genetic algorithms and genetic programming</li>
+						<li>Look at use cases for evolutionary programming</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>What We'll Do</h3>
+
+					<img src="presentation/assets/image/Darwin's_finches_by_Gould.jpg" height="550" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>What We'll Do</h3>
+					
+					<img src="presentation/assets/image/Demo02.png" height="550" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>What We'll Do</h3>
+
+					<img src="presentation/assets/image/Demo03.png" height="550" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>What We'll Do</h3>
+					
+					<img src="presentation/assets/image/Demo04.png" height="550" />
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>What We'll Do</h3>
+					
+					<img src="presentation/assets/image/Demo05.png" height="550" />
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li class="active">What Are Evolutionary Algorithms?</li>
+						<li>Genetics Crash Course</li>
+						<li>Genetic Algorithms</li>
+						<li>Genetic Programming</li>
+					</ol>
+				</section>
+
+				<section data-background-image="presentation/assets/background/questions.jpg" data-background-opacity="0.2">
+					<h3>What Are Evolutionary Algorithms?</h3>
+					
+					<p>Evolutionary algorithms are great at solving a particular type of problem:</p>
+					<p>
+						<ol>
+							<li>Gigantic search space</li>
+							<li>Known way to score answers</li>
+							<li>The solution is too complex to do by hand</li>
+							<li>We expect that known tools can achieve a solution</li>
+						</ol>
+					</p>
+					<p>Evolutionary algorithms also perform extremely well when the environment (and thus the best solution) changes regularly.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/binders.jpg" data-background-opacity="0.2">
+					<h3>What Are Evolutionary Algorithms?</h3>
+					
+					<p>Good uses for Evolutionary Algorithms:  NP-Hard problems.</p>
+					<p>
+						<ul>
+							<li><strong>Optimization</strong>: min/max, circuit layout, Traveling Salesman Problem, Knapsack Problem</li>
+							<li><strong>ML</strong>: building weights for neural nets, rules for classifiers, or training sensors</li>
+							<li><strong>Economics</strong>: bidding strategies (e.g., portfolio bidding), game theory</li>
+							<li><strong>Ecology</strong>: host-parasite co-evolution, symbiosis, resource flow</li>
+						</ul>
+					</p>
+					<p>Evolutionary Algorithms help solve min-max problems and can avoid hill-climbing issues.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>What Are Evolutionary Algorithms?</h3>
+					
+					<p>
+						Evolutionary Algorithms tend to solve hill-climbing problems:
+					</p>
+					<p><img src="presentation/assets/image/HillClimbingProblem.png" height="260" width="683" /></p>
+					<p>Many algorithms tend to get stuck at local maxima/minima; EAs often don't.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/target.jpg" data-background-opacity="0.2">
+					<h3>Heuristics for Good Solutions</h3>
+					
+					<p>
+						<ol>
+							<li><strong>Correctness</strong> – We can find the a priori correct solution.</li>
+							<li class="fragment"><strong>Consistency</strong> – Repeat the problem, repeat the answer.</li>
+							<li class="fragment"><strong>Justifiability</strong> – Cause implies effect.</li>
+							<li class="fragment"><strong>Certainty</strong> – Chance should not be part of the solution.</li>
+							<li class="fragment"><strong>Orderliness</strong> – The process is a logical, step-by-step process in which each step leads to the next.</li>
+							<li class="fragment"><strong>Parsimony</strong> – Simpler is ceteris paribus better.</li>
+							<li class="fragment"><strong>Decisiveness</strong> – Once a solution is found, the problem is solved.</li>
+						</ol>
+					</p>
+					<p class="fragment">Evolutionary algorithms guarantee <strong>none</strong> of these properties.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/dominos.jpg" data-background-opacity="0.2">
+					<h3>What Are the Limitations?</h3>
+					
+					<p>Going further, evolutionary algorithms have a number of limitations:</p>
+					<p>
+						<ul>
+							<li class="fragment">No guarantee of a solution</li>
+							<li class="fragment">No guarantee of good performance in reasonable time</li>
+							<li class="fragment">Answers will likely differ each run</li>
+							<li class="fragment">Often hard to tell when to stop</li>
+							<li class="fragment">Can still get stuck at a local min/max</li>
+							<li class="fragment">Solutions are not parsimonious</li>
+						</ul>
+					</p>
+					<p class="fragment">But...they do still tend to get the job done.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Are Evolutionary Algorithms?</li>
+						<li class="active">Genetics Crash Course</li>
+						<li>Genetic Algorithms</li>
+						<li>Genetic Programming</li>
+					</ol>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetics Crash Course</h3>
+
+					<div class="container">
+						<div class="col">
+							<p>Evolutionary Algorithms are modeled after simplified forms of biological processes.</p>
+						</div>
+						<div class="col">
+							<p><a href="https://commons.wikimedia.org/wiki/File:Darwin%27s_finches_by_Gould.jpg"><img src="presentation/assets/image/Darwin's_finches_by_Gould.jpg" height="450" /></a><br />
+							<small>Creative Commons. Author: John Gould</small></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genes and Chromosomes</h3>
+
+					<div class="container">
+						<div class="col">
+							<p>Organisms have <strong>chromosomes</strong>, whose purpose is to carry <strong>genes</strong>. In Evolutionary Algorithms, "organisms" (candidate solutions) typically have one chromosome.</p>
+						</div>
+						<div class="col">
+							<p><a href="https://commons.wikimedia.org/wiki/File:Human_chromosome_18_with_ASD_genes_from_IJMS-16-06464.png"><img src="presentation/assets/image/Human_chromosome_18_with_ASD_genes_from_IJMS-16-06464.png" height="425" /></a><br />
+							<small>Creative Commons. Author: Merlin G. Butler, et al.</small></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genotypes and Alleles</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p><strong>Genes</strong> make up DNA sequences called <strong>genotypes</strong>.  Each gene has a number of alternative forms, called <strong>alleles</strong>.</p>
+							<p>Genotypes are possible genetic structures. Given 2 alleles for each of 32 genes, we would have 2^32 or 4,294,967,296 genotypes.</p>
+						</div>
+						<div class="col">
+							<p><a href="https://commons.wikimedia.org/wiki/File:Gene.png"><img src="presentation/assets/image/Gene.png" /></a><br />
+							<small>Creative Commons. Courtesy: National Human Genome Research Institute.</small></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Phenotypes</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p><strong>Phenotypes</strong> are observable physical characteristics based on specific genotypes. This might be coloration, height, size, or beak structure.</p>
+						</div>
+						<div class="col">
+							<p><a href="https://commons.wikimedia.org/wiki/File:Punnett_square_mendel_flowers.svg"><img src="presentation/assets/image/Punnett_square_mendel_flowers.svg" height="450" width="450" /></a><br />
+							<small>Creative Commons. Author: Madeline Price Ball</small></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/wrongway.jpg" data-background-opacity="0.2">
+					<h3>Genotypes and Phenotypes</h3>
+					
+					<p>BEWARE:  there is not a 1:1 correspondence between genotypes and phenotypes, as phenotypes often depend upon a specific combination of alleles.  When even one allele is missing, the desired effect may not appear.  Close doesn't count with genetics.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Environmental Niches</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>The environmental niche is a set of features which certain phenotypes might be able to exploit.  Example:  thicker fur for northern climes.</p>
+						</div>
+						<div class="col">
+							<p><a href="https://commons.wikimedia.org/wiki/File:Europe_biogeography_countries.svg"><img src="presentation/assets/image/Europe_biogeography_countries.svg" height="400" width="570" /></a><br />
+							<small>Creative Commons. Author: Julio Reis</small></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Are Evolutionary Algorithms?</li>
+						<li>Genetics Crash Course</li>
+						<li class="active">Genetic Algorithms</li>
+						<li>Genetic Programming</li>
+					</ol>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>Genetic algorithms were popularized with John Holland's work on the topic, particularly <em>Adaptation in Natural and Artificial Systems</em>.</p>
+						</div>
+						<div class="col">
+							<p><img src="presentation/assets/image/Holland_Book.jpeg" height="500" /></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/background/Variety.jpg" data-background-opacity="0.2">
+					<h3>Applying Terms</h3>
+					
+					<p>
+						<ul>
+							<li>Organism = candidate solution</li>
+							<li>Chromosome = solution array</li>
+							<li>Gene = element of the solution array</li>
+							<li>Locus = position of element in the array</li>
+							<li>Allele = specific value for a gene</li>
+							<li>Environmental niche = fitness function</li>
+						</ul>
+					</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<p>Most simple genetic algorithms are arrays of genes with binary alleles:</p>
+					<img src="presentation/assets/image/GA.png" />
+					<p>We build up a population of organisms, large enough to ensure genetic diversity.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<p>After building the population, we score each chromosome using the same fitness function:</p>
+					<img src="presentation/assets/image/Fitness.png" />
+					<p>Now each chromosome has its own score and can compare to other chromosomes.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<p>For each organism (or pair of organisms) in the next generation, determine two "parents" based on some algorithm.  A simple algorithm is roulette wheel, where we pull based on percentage fitness.</p>
+					<img src="presentation/assets/image/Parents.png" />
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<p>We then apply crossover with some probability.  If that RNG pull succeeds, we cross over at some starting and ending point (also RNG determined):</p>
+					<img src="presentation/assets/image/Crossover.png" />
+					<p>Typically, there is one crossover range per organism pair.  Sometimes, the crossover check fails and we keep the two parents.  Usually we perform crossover with p = [0.6, 0.8].</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<p>For each gene in each new organism, we apply some mutation operation:</p>
+					<img src="presentation/assets/image/Mutation.png" />
+					<p>Mutation is a tool to help us get out of local maxima, but too much mutation and you have random search.  Usually we perform mutation with p = [0.0001, 0.01]</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Algorithms</h3>
+					
+					<p>Now we have a new organism, which is hopefully better than the old organisms in terms of solving our fitness function:</p>
+					<img src="presentation/assets/image/NewOrganism.png" />
+					<p>Repeat for each organism in the next generation, and repeat the process.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/skeleton-thinking.jpg" data-background-opacity="0.2">
+					<h3>Good Use Cases</h3>
+					
+					<p>
+						<ul>
+							<li>Knapsack problem</li>
+							<li>Portfolio selection</li>
+							<li>Traveling Salesman Problem</li>
+							<li>The Holyfield Problem</li>
+						</ul>
+					</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>The Holyfield Problem</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>The Holyfield Problem comes from Evander Holyfield's Real Deal Boxing for the Sega Genesis.</p>
+						</div>
+						<div class="col">
+							<p><img src="presentation/assets/image/GA_Boxing_Intro.png" /></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>The Holyfield Problem</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>You have several options to help make your boxer the best but a limited budget that prohibits you from taking everything. How do you make the right decisions?</p>
+						</div>
+						<div class="col">
+							<p><img src="presentation/assets/image/GA_Boxing_Training.png" /></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>The Holyfield Problem</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>Result:  genetic algorithms let us choose the best set of options, making our boxer the best there is.</p>
+						</div>
+						<div class="col">
+							<p><img src="presentation/assets/image/GA_Boxing_DownForCount.png" /></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/folders.jpg" data-background-opacity="0.2">
+					<h3>Portfolio Selection</h3>
+					
+					<p>We want to maximize returns for a portfolio while minimizing risk.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Traveling Salesman Problem</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>We want to minimize total travel distance while hitting every location exactly once.</p>
+						</div>
+						<div class="col">
+							<p><a href="https://optimization.cbe.cornell.edu/index.php?title=Traveling_salesman_problem"><img src="presentation/assets/image/48StatesTSP.png" height="400" /></a></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/thinking-emoji.jpg" data-background-opacity="0.2">
+					<h3>Takeaways</h3>
+					
+					<p>
+						<ul>
+							<li>Solutions exist in multiple languages, including R, Python, .NET, and Java.</li>
+							<li>Genetic algorithms cut through the search space, tending to start off unfocused and honing in on a solution over the course of generations.</li>
+							<li>Genetic algorithms are powerful in part because they do not assume anything about what good genotypes look like, <strong>except</strong> for what the fitness function tells us.</li>
+						</ul>
+					</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Are Evolutionary Algorithms?</li>
+						<li>Genetics Crash Course</li>
+						<li>Genetic Algorithms</li>
+						<li class="active">Genetic Programming</li>
+					</ol>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Programming</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>John Koza popularized Genetic Programming with his eponymous series of books.</p>
+						</div>
+						<div class="col">
+							<p><img src="presentation/assets/image/KozaBook.jpg" height="500" /></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/background/code.jpg" data-background-opacity="0.2">
+					<h3>Genetic Programming</h3>
+					
+					<p>Genetic programming is an extension of genetic algorithm concepts.  Genetic algorithms feature fixed-sized chromosomes with data-representational alleles.</p>
+					
+					<p>Genetic programming takes the mechanisms of genetic algorithms and applies it to a higher-level problem.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Comparison to Genetic Algorithms</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>Similarities:</p>
+							<ul>
+								<li>Populations of candidate solutions</li>
+								<li>Fitness functions</li>
+								<li>New generations of candidate solutions</li>
+								<li>Crossover and mutation operations</li>
+							</ul>
+						</div>
+						<div class="col">
+							<p class="fragment">But there's one major difference:  the organisms/chromosomes are entire programs.</p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Programming</h3>
+					
+					<p>Suppose we want to solve a problem where the fitness function is <code>(56 - x)^2</code>.  One candidate solution:</p>
+					<img src="presentation/assets/image/GPBasics.png" />
+				</section>
+
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Genetic Programming</h3>
+					
+					<p>In practice, genetic programs are significantly less parsimonious.</p>
+					<img src="presentation/assets/image/GPParsimony.png" />
+				</section>
+
+				<section data-background-image="presentation/assets/background/math.jpg" data-background-opacity="0.2">
+					<h3>Mathematical Formulas</h3>
+					
+					<p>Genetic programs are great for deriving mathematical relationships.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/background/coins-stacked.jpg" data-background-opacity="0.2">
+					<h3>Mathematical Formulas</h3>
+					
+					<p>Genetic programs can help us derive non-linear function results, similar to a regression model.  If you are regressing, beware that genetic programs will overtrain on the current data; they're much more useful for identifying formulas.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/data.jpg" data-background-opacity="0.2">
+					<h3>DBA Salaries</h3>
+					
+					<p>Another use for genetic programming is building regression trees, which use decision tree mechanics but solve the same problem as a regression model:  predicting the dependent variable's value.</p>
+
+					<p>For example: how much should you be making?</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/demo.jpg" data-background-opacity="0.2">
+					<h3>Demo Time</h3>
+				</section>
+
+				<section data-background-image="presentation/assets/background/coins.jpg" data-background-opacity="0.2">
+					<h3>DBA Salaries</h3>
+					
+					<p>Our regression tree was not better than a linear regression based on the attributes we selected, but was more understandable to a layman.  In other cases, we can end up with better results.</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/plan.jpg" data-background-opacity="0.2">
+					<h3>Takeaways</h3>
+					
+					<p>
+						<ul>
+							<li>Genetic programs can find arbitrary-length solutions to problems.</li>
+							<li>The best library is <a href="https://github.com/GMUEClab/ecj">ECJ</a> (in Java).</li>
+							<li>Other currently maintained libraries solving symbolic regression problems exist in R (<a href="https://www.rdocumentation.org/packages/gramEvol/versions/2.1-4">gramEvol</a>) and Python (<a href="https://github.com/trevorstephens/gplearn">gplearn</a>).</li>
+							<li>Genetic programming can also generate decision trees.</li>
+						</ul>
+					</p>
+				</section>
+
+				<section data-background-image="presentation/assets/background/wrappingup.jpg" data-background-opacity="0.2">
+					<h3>Wrapping Up</h3>
+
+					<p>Evolutionary algorithms, including genetic algorithms and genetic programming, offer up an interesting approach to navigating large hill-climbing type search spaces with adequate efficiency and relatively high likelihood of avoiding local minima/maxima.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Wrapping Up</h3>
+					
+					<p>
+						To learn more, go here:
+						<br />
+						<a href="https://csmore.info/on/gia">https://csmore.info/on/gia</a>
+					</p>
+					<p>
+						And for help, contact me:
+						<br />
+						<a href="mailto:feasel@catallaxyservices.com">feasel@catallaxyservices.com</a> | <a href="https://www.twitter.com/feaselkl">@feaselkl</a>
+					</p>
+					<br />
+					<p>
+						Catallaxy Services consulting:
+						<br />
+						<a href="https://csmore.info/contact">https://CSmore.info/contact</a>
+					</p>
+				</section>
+			</div>
+		</div>
+
+		<script src="../reveal.js/dist/reveal.js"></script>
+		<script src="../reveal.js/plugin/zoom/zoom.js"></script>
+		<script src="../reveal.js/plugin/notes/notes.js"></script>
+		<script src="../reveal.js/plugin/search/search.js"></script>
+		<script src="../reveal.js/plugin/markdown/markdown.js"></script>
+		<script src="../reveal.js/plugin/math/math.js"></script>
+		<script src="../reveal.js/plugin/menu/menu.js"></script>
+		<script src="../reveal.js/plugin/highlight/highlight.js"></script>
+		<script src="../reveal.js/plugin/chart/Chart.min.js"></script>
+		<script src="../reveal.js/plugin/chart/plugin.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				width: '70%',
+				controls: true,
+				progress: true,
+				center: true,
+				hash: true,
+				transition: 'fade',
+				
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealZoom, RevealNotes, RevealSearch, RevealMarkdown, RevealHighlight, RevealMath, RevealMenu, RevealChart ]
+			});
+		</script>
+	</body>
+</html>

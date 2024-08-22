@@ -1,0 +1,82 @@
+---
+title: "05 - GP - Deriving a Mathematical Formula"
+author: "Kevin Feasel"
+date: "2024-08-22"
+output: html_notebook
+---
+
+# Deriving A Mathematical Formula
+
+In this demo, we will use genetic programming to determine a good mathematical formula given a particular set of input and output data.
+
+## Installing Libraries
+
+The library we are using is called `gramEvol` and is an implementation of grammatical evolution (GE) rather than genetic programming (GP), though it is still somewhat similar in nature. Both of these include the idea of symbolic regression, deriving a formula from a series of fitness tests.
+
+```{r install}
+if(!require(gramEvol)) {
+    install.packages("gramEvol")
+    library(gramEvol)
+}
+```
+
+## The Problem
+
+We will start out with a set of x and y values.  There's no easy formula linking x and y, so we could see a relatively complex result here.
+
+```{r data}
+x = c(1, 2, 3, 4, 5, 6, 7)
+y = c(0, 26, 88, 186, 320, 490, 541)
+plot(x,y)
+```
+
+## Building a Grammar
+
+We will use three basic functions.  There are some functions for this problem that will result in error, like division (e.g., divide by zero errors), so we will stick to the safest operators for this demo.
+
+```{r functions}
+ruleDef <- list(expr = grule(op(expr, expr), func(expr), var),
+                func = grule(sin, cos, log, sqrt),
+                op = grule('+', '-', '*'),
+                var = grule(x))
+ 
+grammarDef <- CreateGrammar(ruleDef)
+```
+
+## Defining a Fitness Function
+
+The next thing we need is a fitness function, that provides a cost of being wrong. We'll want to minimize this cost of all points in the function, so we'll use the mean of the log of the absolute difference between the actual and predicted values.
+
+```{r fitness-function}
+fitness_function <- function(expr) {
+  result <- eval(expr)
+  if (any(is.nan(result)))
+    return(Inf)
+  return (mean(log(1 + abs(y - result))))
+}
+```
+
+## Evolving the Solution
+
+Now it's time to evolve the solution.  We'll set a termination cost of 0.1, meaning that if we get a cost of 0.1 or lower, we'll stop.  We'll also set a maximum depth of 5, meaning that the longest path from the root to a leaf node is 8.
+
+Note that this will take a fair amount of time and will likely generate a large number of invalid results (e.g., taking the square root of a negative number), so we are not writing out the results here.
+
+```{r regression, echo=FALSE, warning=FALSE}
+ge <- GrammaticalEvolution(grammarDef, fitness_function, terminationCost = 0.1, iterations = 2500, max.depth = 8)
+```
+
+## Reviewing Results
+
+Now we can plot our results against the actual (x,y) coordinates to see how close our best shot was.
+
+```{r plot}
+plot(x,y)
+points(eval(ge$best$expressions), col = "red", type = "l")
+```
+It's a decent guess, but not perfect by any stretch.  Let's take a look at the function the genetic program generated.
+
+```{r results}
+ge$best$expressions
+```
+

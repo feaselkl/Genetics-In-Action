@@ -1,0 +1,133 @@
+---
+title: "03 - GA - Portfolio Optimization"
+author: "Kevin Feasel"
+date: "2024-08-22"
+output: html_notebook
+---
+
+# Portfolio Optimization
+
+For this demo, we will look at using genetic algorithm to optimize a portfolio of stock.  Without getting too far into details about portfolio theory, the goal of portfolio optimization is to maximize return on investment for some given risk appetite.
+
+Specifically, we have a set of stocks, each of which has some return on investment and some stock price variance.  We'll normalize our budget to 1.  Given that normalized budget, we want to put together a combination of stocks to maximize return on investment.
+
+In our example below, we will not have a fixed acceptable variance, but will instead penalize results with higher variance.
+
+## Preparatory Work
+
+```{r install}
+if(!require(GA)) {
+    install.packages("GA", repos = "http://cran.us.r-project.org")
+    library(GA)
+}
+
+if(!require(quantmod)) {
+    install.packages("quantmod", repos = "http://cran.us.r-project.org")
+    library(quantmod)
+}
+
+if(!require(timeSeries)) {
+    install.packages("timeSeries", repos = "http://cran.us.r-project.org")
+    library(timeSeries)
+}
+```
+
+## Data Preparation
+
+We start by defining the set of available stocks.  This includes a number of tech and blue-chip stocks that you may imagine would be good for a portfolio.
+
+```{r stocks}
+available_stocks <- c("AAPL", "XOM", "GOOGL", "MSFT", "GE", "JNJ", "WMT", "CVX", "PG", "WFC")
+```
+
+Next, we want to use the `quantmod` package to retrieve stock information from Google.  The `getSymbols` method retrieves data for us for that particular stock symbol.  Then, the `monthlyReturn` function generates a return on investment for each month in the data set.  We pass in a `subset` parameter which limits our results to the years 2016 and 2017 to make our analysis a little more readable.
+
+```{r stock_data}
+quantmod::getSymbols(available_stocks, src = "yahoo")
+returns <- lapply(available_stocks, function(s) {
+  quantmod::monthlyReturn(eval(parse(text = s)), subset = "2017::2023")
+})
+returns <- do.call(cbind,returns)
+colnames(returns) <- available_stocks
+```
+Now that we have data for our 10 stocks, we will plot their returns.  We generate one plot per stock.  A value of 0 means a 0% return on investment.  0.05 is a 5% return on investment over the course of a month.
+
+```{r plot_returns}
+plot(as.timeSeries(returns))
+title("Portfolio Returns")
+```
+
+We have an idea of which stocks are growing and which are not, but that's only part of the solution.  We also need to get volatility scores.  The next section builds up the formula we'll use as part of the genetic algorithm.
+
+```{r formulas}
+nStocks <- ncol(returns)   # number of portfolio assets
+R <- colMeans(returns)     # average monthly returns
+S <- cov(returns)          # covariance matrix of monthly returns
+s <- sqrt(diag(S))         # volatility of monthly returns
+```
+
+```{r volatility_plot}
+plot(s, R, type = "n", panel.first = grid(), xlab = "Std. dev. monthly returns", ylab = "Average monthly returns")
+text(s, R, names(R), col = .colorwheelPalette(10), font = 2)
+```
+
+This plot shows return on the y axis and volatility on the x axis.  Ideally, we want stocks in the top-left portion.
+
+Now that we have an idea of what the stocks look like, let's build the functions we need.  First up, we will build three functions, one to normalize weights, one to generate an expected return, and one to build our volatility.
+
+```{r functions}
+weights <- function(w) { drop(w/sum(w)) }
+ExpReturn <- function(w) { sum(weights(w)*R) }
+VarPortfolio <- function(w) {
+  w <- weights(w)
+  drop(w %*% S %*% w)
+}
+```
+
+Our fitness function is fairly simple.  Given a set of weights, we want to build a penalty function based on volatility.  If the expected return is less than 0, add a very heavy penalty weight of 100 * return^2.
+
+Note that my final formula uses 5 as a hard-coded weight.  That's a fudge factor that I've added in to introduce a desire for stability (reducing volatility) without completely abandoning any type of return on investment.
+
+```{r fitness}
+fitness <- function(w) {
+  ER <- ExpReturn(w) - 0.01
+  penalty <- if(ER < 0) 100*ER^2 else 0
+  ER - 5 * (VarPortfolio(w) + penalty)
+}
+```
+
+Now we can run the genetic algorithm.
+
+```{r genetic_algorithm}
+GA <- ga(type = "real-valued", fitness = fitness,
+           lower = rep(0, nStocks), upper = rep(1, nStocks), names = available_stocks,
+           maxiter = 1000, run = 200, optim = TRUE)
+```
+
+The genetic algorithm will run for a moment, but once it's done, we can look at the results.
+
+
+```{r results}
+summary(GA)
+```
+
+This returns some solution matrix, but these numbers are *not* the percentages of our portfolio!  We need to calculate those separately in order to get the expected return.
+
+```{r weights}
+(w <- weights(GA@solution))
+```
+
+```{r expected_return}
+ExpReturn(w)
+```
+
+```{r variance}
+VarPortfolio(w)
+```
+
+And if you want a colorful bar plot which shows portfolio selections, here you go:
+
+```{r bar_plot}
+barplot(w, xlab = "Stocks", ylab = "Portfolio weights",
+          cex.names = 0.7, col = .colorwheelPalette(10))
+```
