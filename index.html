@@ -101,6 +101,7 @@
 						<li>Genetics Crash Course</li>
 						<li>Genetic Algorithms</li>
 						<li>Genetic Programming</li>
+						<li>Alternatives to Evolution</li>
 					</ol>
 				</section>
 
@@ -186,6 +187,7 @@
 						<li class="active">Genetics Crash Course</li>
 						<li>Genetic Algorithms</li>
 						<li>Genetic Programming</li>
+						<li>Alternatives to Evolution</li>
 					</ol>
 				</section>
 
@@ -274,6 +276,7 @@
 						<li>Genetics Crash Course</li>
 						<li class="active">Genetic Algorithms</li>
 						<li>Genetic Programming</li>
+						<li>Alternatives to Evolution</li>
 					</ol>
 				</section>
 
@@ -455,6 +458,7 @@
 						<li>Genetics Crash Course</li>
 						<li>Genetic Algorithms</li>
 						<li class="active">Genetic Programming</li>
+						<li>Alternatives to Evolution</li>
 					</ol>
 				</section>
 
@@ -559,6 +563,101 @@
 							<li>The best library is <a href="https://github.com/GMUEClab/ecj">ECJ</a> (in Java).</li>
 							<li>Other currently maintained libraries solving symbolic regression problems exist in R (<a href="https://www.rdocumentation.org/packages/gramEvol/versions/2.1-4">gramEvol</a>) and Python (<a href="https://github.com/trevorstephens/gplearn">gplearn</a>).</li>
 							<li>Genetic programming can also generate decision trees.</li>
+						</ul>
+					</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Agenda</h3>
+					
+					<ol>
+						<li>What Are Evolutionary Algorithms?</li>
+						<li>Genetics Crash Course</li>
+						<li>Genetic Algorithms</li>
+						<li>Genetic Programming</li>
+						<li class="active">Alternatives to Evolution</li>
+					</ol>
+				</section>
+
+				<section data-background-image="presentation/assets/background/arrow-right.jpg" data-background-opacity="0.2">
+					<h3>Reinforcement Learning Flow</h3>
+					
+					<ul>
+						<li>Single agent tries an action</li>
+						<li>Agent receives a reward based on how it did</li>
+						<li>Agent tries something new and compares reward</li>
+						<li>Agent tracks different 'reward paths' and focuses down on more rewarding sets of options</li>
+					</ul>
+					
+					<p>There's some similarity to evolutionary algorithms!</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/bison-fighting.jpg" data-background-opacity="0.2">
+					<h3>How Reinforcement Learning Differs</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>Reinforcement Learning:</p>
+							<ul>
+								<li>Maximize an expected sum of reward</li>
+								<li>Typically focuses on one agent</li>
+								<li>More mathematically grounded</li>
+								<li>"Intra-life" learning leads to 'experience replay' (remembering good prior outcomes)</li>
+							</ul>
+						</div>
+						<div class="col">
+							<p>Genetic Algorithms:</p>
+							<ul>
+								<li>Maximize the fitness of a population</li>
+								<li>Focuses on one population made up of many agents</li>
+								<li>More heuristically organized</li>
+								<li>"Inter-life" learning focuses on passing on knowledge to next generation</li>
+							</ul>
+						</div>
+					</div>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/handshake.jpg" data-background-opacity="0.2">
+					<h3>Why Not Both?</h3>
+					
+					<p>Paper by Irmouli, et al: Genetic Algorithm enhanced by Deep Reinforcement learning in parent selection mechanism and mutation</p>
+					
+					<ul>
+						<li>Dynamically change selection and mutation criteria based on generational shifts</li>
+						<li>Might help with faster convergence on complicated problems</li>
+					</ul>
+				</section>
+				
+				<section data-background-image="presentation/assets/background/robot.jpg" data-background-opacity="0.2">
+					<h3>Neural Networks</h3>
+					
+					<p>Neural networks have dominated machine learning and artificial intelligence over the past 12+ years. They tend to be significantly better at approximating functions with continuous data, such as image classification or regression techniques.</p>
+					
+					<p>Genetic algorithms work best with broad-spaced and complicated search spaces.</p>
+				</section>
+				
+				<section data-background-image="presentation/assets/image/Bubbles.jpg" data-background-opacity="0.4">
+					<h3>Why Not Both? -- MarI/O</h3>
+					
+					<div class="container">
+						<div class="col">
+							<p>Genetic algorithms provide the fitness function for a neural network to solve a Super Mario World level.</p>
+							<p>Video link: <a href="https://www.youtube.com/watch?v=qv6UVOQ0F44">https://www.youtube.com/watch?v=qv6UVOQ0F44</a></p>
+						</div>
+						<div class="col">
+							<p><img src="presentation/assets/image/MarIO.png" height="500" /></p>
+						</div>					
+					</div>
+				</section>
+
+				<section data-background-image="presentation/assets/background/rocket.jpg" data-background-opacity="0.2">
+					<h3>Takeaways</h3>
+					
+					<p>
+						<ul>
+							<li>Genetic algorithms are not the same thing as neural networks or reinforcmeent learning.</li>
+							<li>Genetic algorithms can be competitive versus reinforcement learning or neural networks in certain spaces, especially broad-based and complex optimization problems.</li>
+							<li>Genetic algorithms can work together with reinforcement learning or neural networks, generating better outcomes than using either on its own.</li>
 						</ul>
 					</p>
 				</section>
